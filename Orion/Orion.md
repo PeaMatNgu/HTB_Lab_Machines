@@ -36,6 +36,7 @@ title: Orion
 -	Khi Payload được gửi thành công, `fileSession` độc hại được thực thì `eval($_GET[‘cmd’])`, `cmd` được gán ở trên payload chính là đoạn code php để mở kết nối từ victim đến máy attacker. Phía máy attacker mở lắng nghe tại cổng đã định trước, và có được quyền truy cập vào máy chủ Orion.
 -	Thực hiện tự động bằng Metasploit, truy cập vào file môi trường .env để đọc nội dung bên trong: tên db, mật khẩu db, người dùng db,… Sau đó xác thực db để xem thông tin của db: `mysql -u root -p orion`. Tìm được 1 user tên Adam, nhưng mật khẩu đã bị bcrypt, vì vậy sử dụng `hashcat` với `rockyou.txt` để tìm ra mật khẩu dạng rõ. 
 <img width="450" height="128" alt="Screenshot 2026-09-13 214936" src="https://github.com/user-attachments/assets/2f616573-02e9-4146-b6b9-461c649c3db9" />
+
 **Question10:** `Submit the flag located in the root user's home directory?`
 - Đăng nhập bằng ssh với `adam@orion.htb` và password, đọc file user.txt như bình thường. Sau khi thử quét các cổng và dịch vụ và hỗ trợ thì có thấy xuất hiện cổng ==23== tương ứng với telnet, một giao thức không an toàn. Kiểm tra version của telnet là ==2.7== thì thấy có bị lỗ hổng liên quan đến **CVE-2026-24061**.
 - Khai thác bằng payload `USER="-f root" telnet -a 127.0.0.1`. `USER="-f root"`: Tạo ra một biến môi trường tạm thời trên máy mình với giá trị là `-f root`. `telnet -a 127.0.0.1`: Tham số -a (**Autologin**) ra lệnh cho chương trình Telnet tự động bốc biến môi trường USER vừa tạo để gửi sang bên Server trong quá trình thiết lập kết nối (**handshake**).
