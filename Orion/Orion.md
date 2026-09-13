@@ -17,6 +17,7 @@ title: Orion
 - CVE-2025-32432: CraftCMS xây dựng trên `Yii framework`, Yii có cơ chế cho cấu hình object bằng array/configuration, đơn giản có thể hiểu là tạo 1 object mới bằng mảng
 - Trong CraftCMS tồn tại các action routes: Bắt đầu bằng tiền tố actions/… để gọi trực tiếp các controller xử lý chức năng ngầm của hệ thống hoặc plugin. Ví dụ: `actions/assets/generate-transform`. Cơ chế được diễn tả trong payload như sau:
 <img width="472" height="117" alt="Screenshot 2026-09-13 212704" src="https://github.com/user-attachments/assets/60d717d0-57be-42cd-8376-6afa49fbfcb4" />
+
 - `class: "craft\\behaviors\\FieldLayoutBehavior"`: Đây được coi như một lá chắn hợp lệ, hệ thống CraftCMS trước khi xử lý mảng sẽ kiểm tra khi thấy từ khóa `class`, nhưng nó thấy đây là 1 class hợp lệ vì vậy mà không loại bỏ, `_class` cũng được bỏ qua vì bộ lọc không biết từ khóa (**option**) này dùng để làm gì.
 - "__class": "GuzzleHttp\\Psr7\\FnStream": Đây là mục tiêu thật (object) mà attacker muốn tạo ra vì FnStream là một class của thư viện GuzzleHttp. Class này cho phép định nghĩa hàm callback bằng chuỗi. Hiểu đơn giản là khi object bị đóng hoặc hủy, nó sẽ tự động gọi hàm đó -> RCE.
 -	Trong cơ chế **DI Container** của Yii2, `_class` là từ khóa đặc biệt có ==priority== > `class`,`_class` được dùng để chỉ định rõ cấu hình cho DI Container. Vì vậy, FieldLayoutBehavior không được tạo ra, mà class được tạo là **FnStream**.
@@ -30,11 +31,13 @@ title: Orion
 **Question5:** `What is the password that can be obtained from the MySQL database?`
 - Để lấy được những thông tin trong Database, cần lợi dụng lỗ hổng như trên, nhưng mục tiêu nhắm vào ==PhpManager==, vì đây là lớp quản lý phân quyền của Yii Framework.
 <img width="455" height="216" alt="Screenshot 2026-09-13 214347" src="https://github.com/user-attachments/assets/9f08b89d-5aa0-4982-a7f0-87b04100562e" />
+
 - Vì nó được lập trình sẵn tính năng khi khởi tạo sẽ tìm tệp tin được khai báo ở `itemFile` và ép hệ thống chạy lệnh `include_once($itemFile)` để nạp dữ liệu.
 -	Ta sẽ truyền đường dẫn vào file Session mà ta đã đầu độc ở trên, mã độc được thực thi trực tiếp bằng quyền Server.
 -	`base64endoded_reversephpPAYLOAD`: Đây là đoạn code php có chức năng tạo kết nối ngược, nói đơn giản là máy chủ victim sẽ mở một đường truyền mạng kết nối đến địa chỉ IP của attacker (Phải encodeBase64 vì để bản rõ có thể bị WAF chặn).
 -	Khi Payload được gửi thành công, `fileSession` độc hại được thực thì `eval($_GET[‘cmd’])`, `cmd` được gán ở trên payload chính là đoạn code php để mở kết nối từ victim đến máy attacker. Phía máy attacker mở lắng nghe tại cổng đã định trước, và có được quyền truy cập vào máy chủ Orion.
--	Thực hiện tự động bằng Metasploit, truy cập vào file môi trường .env để đọc nội dung bên trong: tên db, mật khẩu db, người dùng db,… Sau đó xác thực db để xem thông tin của db: `mysql -u root -p orion`. Tìm được 1 user tên Adam, nhưng mật khẩu đã bị bcrypt, vì vậy sử dụng `hashcat` với `rockyou.txt` để tìm ra mật khẩu dạng rõ. 
+-	Thực hiện tự động bằng Metasploit, truy cập vào file môi trường .env để đọc nội dung bên trong: tên db, mật khẩu db, người dùng db,… Sau đó xác thực db để xem thông tin của db: `mysql -u root -p orion`. Tìm được 1 user tên Adam, nhưng mật khẩu đã bị bcrypt, vì vậy sử dụng `hashcat` với `rockyou.txt` để tìm ra mật khẩu dạng rõ.
+ 
 <img width="450" height="128" alt="Screenshot 2026-09-13 214936" src="https://github.com/user-attachments/assets/2f616573-02e9-4146-b6b9-461c649c3db9" />
 
 **Question10:** `Submit the flag located in the root user's home directory?`
