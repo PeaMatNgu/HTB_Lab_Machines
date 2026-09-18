@@ -57,7 +57,7 @@ title: Orion
 <img width="777" height="266" alt="Screenshot 2026-09-18 125859" src="https://github.com/user-attachments/assets/74a3f7a9-adf6-4a21-a304-5b400234daf5" />
 
 **Question10:** `Submit the flag located in the root user's home directory?`
-- Đăng nhập bằng ssh với `adam@orion.htb` và password, đọc file user.txt như bình thường. Sau khi thử quét các cổng và dịch vụ và hỗ trợ thì có thấy xuất hiện cổng ==23== tương ứng với telnet, một giao thức không an toàn.
+- Đăng nhập bằng ssh với `adam@orion.htb` và password, đọc file user.txt như bình thường. Sau khi thử quét các cổng và dịch vụ và hỗ trợ thì có thấy xuất hiện cổng **23** tương ứng với telnet, một giao thức không an toàn.
 <img width="502" height="195" alt="Screenshot 2026-09-18 130256" src="https://github.com/user-attachments/assets/a7df3268-8a4d-468a-b0dd-0a4f1e551d45" />
 
 - Kiểm tra version của telnet là **2.7** thì thấy có bị lỗ hổng liên quan đến **CVE-2026-24061**.
