@@ -10,17 +10,25 @@ title: Orion
 
 **Question1:** `How many open TCP ports are listening on Orion?`
 - Sử dụng nmap để quét các cổng dịch vụ đang chạy, kết quả tìm ra có hai cổng đang mở là 22(SSH) và 80(Http).
+ <img width="437" height="99" alt="Screenshot 2026-09-18 123112" src="https://github.com/user-attachments/assets/b34b7ef3-fe4e-4950-9592-13aedd541394" />
+
 - Sửa đổi file /etc/hosts để cho máy phân giải địa chỉ ip trỏ về domain của bài.
+<img width="322" height="152" alt="Screenshot 2026-09-18 123154" src="https://github.com/user-attachments/assets/60635315-3c07-4d88-a847-e5de335f6f08" />
 
 **Question2:** `What is the version of CraftCMS running on the target?`
-- Sau khi fuzzing thử các endpoint phổ biến, kết quả trả về được `/admin` tiết lộ phiên bản **CraftCMS** đang được sử dụng là 5.6.16.
+- Sau khi fuzzing thử các endpoint phổ biến, kết quả trả về được `/admin` với `status code = 302`, điều này có nghĩa khi truy cập endpoint này, nó sẽ điều hướng đến endpoint khác.
+ <img width="829" height="129" alt="Screenshot 2026-09-18 123452" src="https://github.com/user-attachments/assets/dba11175-4d12-471d-ade2-421a1cf892d3" />
+
+- Nhận ra endpoint `/admin` này sẽ chuyển hướng đến trang `login`, ở đây ta thấy được phiên bản **Craft CMS 5.6.16**, khi tra cứu trên mạng thì ta thấy có 1 CVE liên quan đến hệ thống này.
+ <img width="266" height="359" alt="Screenshot 2026-09-18 123539" src="https://github.com/user-attachments/assets/8d48109f-2e22-4b50-802a-d7288146bcf3" />
+
 - CVE-2025-32432: CraftCMS xây dựng trên `Yii framework`, Yii có cơ chế cho cấu hình object bằng array/configuration, đơn giản có thể hiểu là tạo 1 object mới bằng mảng
 - Trong CraftCMS tồn tại các action routes: Bắt đầu bằng tiền tố actions/… để gọi trực tiếp các controller xử lý chức năng ngầm của hệ thống hoặc plugin. Ví dụ: `actions/assets/generate-transform`. Cơ chế được diễn tả trong payload như sau:
 <img width="472" height="117" alt="Screenshot 2026-09-13 212704" src="https://github.com/user-attachments/assets/60d717d0-57be-42cd-8376-6afa49fbfcb4" />
 
 - `class: "craft\\behaviors\\FieldLayoutBehavior"`: Đây được coi như một lá chắn hợp lệ, hệ thống CraftCMS trước khi xử lý mảng sẽ kiểm tra khi thấy từ khóa `class`, nhưng nó thấy đây là 1 class hợp lệ vì vậy mà không loại bỏ, `_class` cũng được bỏ qua vì bộ lọc không biết từ khóa (**option**) này dùng để làm gì.
 - "__class": "GuzzleHttp\\Psr7\\FnStream": Đây là mục tiêu thật (object) mà attacker muốn tạo ra vì FnStream là một class của thư viện GuzzleHttp. Class này cho phép định nghĩa hàm callback bằng chuỗi. Hiểu đơn giản là khi object bị đóng hoặc hủy, nó sẽ tự động gọi hàm đó -> RCE.
--	Trong cơ chế **DI Container** của Yii2, `_class` là từ khóa đặc biệt có ==priority== > `class`,`_class` được dùng để chỉ định rõ cấu hình cho DI Container. Vì vậy, FieldLayoutBehavior không được tạo ra, mà class được tạo là **FnStream**.
+-	Trong cơ chế **DI Container** của Yii2, `_class` là từ khóa đặc biệt có **priority** > `class`,`_class` được dùng để chỉ định rõ cấu hình cho DI Container. Vì vậy, FieldLayoutBehavior không được tạo ra, mà class được tạo là **FnStream**.
 -	`"__construct()"`: [ [] ]”: Class FnStream của thư viện Guzzle đòi hỏi tham số đầu vào của hàm `__construct` phải là một mảng **(array $methods)**. Do đó, cấu trúc [ [] ] nghĩa là truyền một mảng rỗng làm tham số đầu tiên cho hàm tạo.
 -	`"_fn_close": "phpinfo"`: Gán cho thuộc tính `_fn_close` cụm `phpinfo`, mục đích để khi đối tượng trong php không được sử dụng nữa thì sẽ tự động gọi hàm `_destruct()` -> tự động gọi tiếp đến hàm được lưu trong biến `close()`-> `close()` kích hoạt code được gán trong `_fn_close`.
 - Sau khi truyền payload vào, ta tìm trong response trả về thì thấy php thường lưu session trong đường dẫn: /var/lib/php/sessions. Trong CraftCSM sessionID chính là CraftSessionID, tương ứng: `/var/lib/php/sessions/sess_<Session_ID>`.
@@ -29,7 +37,7 @@ title: Orion
 -	Gửi 1 request bình thường đến `/admin/login` để lấy **Cookie** và **X-CSRF-Token**. Payload chỉ thành công khi có đủ `CraftSesionId`, `CRAFT_CSRF_TOKEN` và `X-CSRF-TOKEN`.
 
 **Question5:** `What is the password that can be obtained from the MySQL database?`
-- Để lấy được những thông tin trong Database, cần lợi dụng lỗ hổng như trên, nhưng mục tiêu nhắm vào ==PhpManager==, vì đây là lớp quản lý phân quyền của Yii Framework.
+- Để lấy được những thông tin trong Database, cần lợi dụng lỗ hổng như trên, nhưng mục tiêu nhắm vào **PhpManager**, vì đây là lớp quản lý phân quyền của Yii Framework.
 <img width="455" height="216" alt="Screenshot 2026-09-13 214347" src="https://github.com/user-attachments/assets/9f08b89d-5aa0-4982-a7f0-87b04100562e" />
 
 - Vì nó được lập trình sẵn tính năng khi khởi tạo sẽ tìm tệp tin được khai báo ở `itemFile` và ép hệ thống chạy lệnh `include_once($itemFile)` để nạp dữ liệu.
