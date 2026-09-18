@@ -11,6 +11,7 @@ title: Nexus
 **Question1:** `How many open TCP ports are listening on Nexus?`
 - Sử dụng **nmap** để quét các cổng dịch vụ đang chạy, kết quả tìm ra có hai cổng đang mở là **22(SSH)** và **80(Http)**.
 <img width="403" height="92" alt="Screenshot 2026-09-18 095958" src="https://github.com/user-attachments/assets/841b3479-f54d-49eb-aa11-61e59019544a" />
+
 - Sửa đổi file `/etc/hosts` để cho máy phân giải địa chỉ ip trỏ về domain của bài.
 <img width="311" height="65" alt="Screenshot 2026-09-18 100035" src="https://github.com/user-attachments/assets/e756e252-590a-4550-859b-b36985a1a412" />
 
