@@ -49,6 +49,7 @@ title: Nexus
 - Flow hoạt động là duyệt danh sách file bằng `git ls-tree` rồi sao chép vào `/home/git/template-staging/<owner>/<repo>/`, nhưng vấn đề ở trong cách xử lý đường dẫn, script lấy trực tiếp giá trị truyền vào từ user mà không có cơ chế validate. Nếu người dùng lợi dụng `../` thì có thể khiến file được ghi ra ngoài thư mục `staging`.
 <img width="317" height="140" alt="Screenshot 2026-09-18 112734" src="https://github.com/user-attachments/assets/9346b2d2-33da-4a8b-be32-1e151e01f0d6" />
 
+
 <img width="368" height="43" alt="Screenshot 2026-09-12 161619" src="https://github.com/user-attachments/assets/e77d0ed7-2d19-4cac-990e-ed8ff6be6627" />
 
 - Đăng nhập vào tài khoản người dùng `j.matthew@nexus.htb` và tạo một repo mới tên `rce`, và đánh dấu repo này là 1 template. Tiếp tục trên máy attacker tạo 1 cặp khóa công khai bằng `ssh-keygen -f ./mykey -N ''` trong thư mục `\tmp`.
