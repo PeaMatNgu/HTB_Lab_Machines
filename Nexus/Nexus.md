@@ -52,8 +52,14 @@ title: Nexus
 - Đây là đoạn mã nguồn gây ra lỗi leo thang đặc quyền này, hệ thống không có cơ chế làm sạch mà bê hết tên file rồi clone vào đường dẫn, Nếu người dùng lợi dụng `../` thì có thể khiến file được ghi ra ngoài thư mục `staging`.
 <img width="368" height="43" alt="Screenshot 2026-09-12 161619" src="https://github.com/user-attachments/assets/e77d0ed7-2d19-4cac-990e-ed8ff6be6627" />
 
-- Đăng nhập vào tài khoản người dùng `j.matthew@nexus.htb` và tạo một repo mới tên `rce`, và đánh dấu repo này là 1 template. Tiếp tục trên máy attacker tạo 1 cặp khóa công khai bằng `ssh-keygen -f ./mykey -N ''` trong thư mục `\tmp`.
+- Đăng nhập vào tài khoản người dùng `j.matthew@nexus.htb` và tạo một repo mới tên `rce`, và đánh dấu repo này là 1 template. Tiếp tục trên máy attacker tạo 1 cặp khóa công khai bằng `ssh-keygen -t ed25519 -f /tmp/.k -N ''` trong thư mục `\tmp`.
+<img width="338" height="190" alt="Screenshot 2026-09-18 120336" src="https://github.com/user-attachments/assets/b40946ad-2388-4029-97ec-dc916a5e2469" />
+
 - Trên máy attacker sinh 1 cặp khóa công khai, ghi khóa công khai vào `/root/.ssh/authorized_keys` bằng việc lợi dụng cơ chế clone `template_repo`, nhưng thông thường **git** có hàm verify file path "..", nên cần tạo Git object trong `.git/objects`bằng script python.
-- `git push -u origin main --force`, đợi 2 phút khi systemd chạy, nó sẽ clone `public key` và attacker có thể ssh vào máy server, sau đó lấy được flag.
+<img width="271" height="76" alt="Screenshot 2026-09-18 121753" src="https://github.com/user-attachments/assets/1fb6f5b8-8bc9-4c7a-ad50-4c4aaed89274" />
 
+- `git push -u origin main --force`, đợi 2 phút khi systemd chạy, nó sẽ clone `public key` và kiểm tra lại log xem đã clone thành công chưa `cat /var/log/template-sync.log`.
+<img width="395" height="94" alt="Screenshot 2026-09-18 122323" src="https://github.com/user-attachments/assets/041c1d9d-973b-47ca-9e7f-e1bd04514d83" />
 
+- Đăng nhập SSH vào tài khoản root `ssh -i /tmp/.k root@10.129.41.12` và đọc file `root.txt` để lấy flag.
+<img width="359" height="168" alt="Screenshot 2026-09-18 122552" src="https://github.com/user-attachments/assets/a3c8d8e8-d5aa-4ee0-bc71-f0e26391228f" />
