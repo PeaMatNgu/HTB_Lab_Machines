@@ -44,21 +44,31 @@ title: Orion
 -	Ta sẽ truyền đường dẫn vào file Session mà ta đã đầu độc ở trên, mã độc được thực thi trực tiếp bằng quyền Server.
 -	`base64endoded_reversephpPAYLOAD`: Đây là đoạn code php có chức năng tạo kết nối ngược, nói đơn giản là máy chủ victim sẽ mở một đường truyền mạng kết nối đến địa chỉ IP của attacker (Phải encodeBase64 vì để bản rõ có thể bị WAF chặn).
 -	Khi Payload được gửi thành công, `fileSession` độc hại được thực thì `eval($_GET[‘cmd’])`, `cmd` được gán ở trên payload chính là đoạn code php để mở kết nối từ victim đến máy attacker. Phía máy attacker mở lắng nghe tại cổng đã định trước, và có được quyền truy cập vào máy chủ Orion.
--	Thực hiện tự động bằng Metasploit, truy cập vào file môi trường .env để đọc nội dung bên trong: tên db, mật khẩu db, người dùng db,… Sau đó xác thực db để xem thông tin của db: `mysql -u root -p orion`. Tìm được 1 user tên Adam, nhưng mật khẩu đã bị bcrypt, vì vậy sử dụng `hashcat` với `rockyou.txt` để tìm ra mật khẩu dạng rõ.
- 
+-	Thực hiện tự động bằng Metasploit, dùng `getuid` thì thấy shell lấy được có quyền của `www`, nâng cấp shell lên terminal bằng `script /dev/null -c /bin/bash`.
 <img width="450" height="128" alt="Screenshot 2026-09-13 214936" src="https://github.com/user-attachments/assets/2f616573-02e9-4146-b6b9-461c649c3db9" />
 
+- Truy cập vào file môi trường .env để đọc nội dung bên trong: tên db, mật khẩu db, người dùng db,… Sau đó xác thực db để xem thông tin của db: `mysql -u root -p orion`.
+ <img width="515" height="287" alt="Screenshot 2026-09-18 124723" src="https://github.com/user-attachments/assets/4ba73397-cbe9-409d-b4db-741b0bece114" />
+
+-   Truy vấn toàn bộ cơ sở dữ liệu user `Select *from users;`, tìm được 1 user tên Adam.
+<img width="929" height="204" alt="Screenshot 2026-09-18 125734" src="https://github.com/user-attachments/assets/327adf36-3de1-4d70-a88c-b7e81f190318" />
+
+-    Mật khẩu đã bị bcrypt, vì vậy sử dụng `hashcat` với `rockyou.txt` để tìm ra mật khẩu dạng rõ.
+<img width="777" height="266" alt="Screenshot 2026-09-18 125859" src="https://github.com/user-attachments/assets/74a3f7a9-adf6-4a21-a304-5b400234daf5" />
+
 **Question10:** `Submit the flag located in the root user's home directory?`
-- Đăng nhập bằng ssh với `adam@orion.htb` và password, đọc file user.txt như bình thường. Sau khi thử quét các cổng và dịch vụ và hỗ trợ thì có thấy xuất hiện cổng ==23== tương ứng với telnet, một giao thức không an toàn. Kiểm tra version của telnet là ==2.7== thì thấy có bị lỗ hổng liên quan đến **CVE-2026-24061**.
+- Đăng nhập bằng ssh với `adam@orion.htb` và password, đọc file user.txt như bình thường. Sau khi thử quét các cổng và dịch vụ và hỗ trợ thì có thấy xuất hiện cổng ==23== tương ứng với telnet, một giao thức không an toàn.
+<img width="502" height="195" alt="Screenshot 2026-09-18 130256" src="https://github.com/user-attachments/assets/a7df3268-8a4d-468a-b0dd-0a4f1e551d45" />
+
+- Kiểm tra version của telnet là **2.7** thì thấy có bị lỗ hổng liên quan đến **CVE-2026-24061**.
+<img width="432" height="101" alt="Screenshot 2026-09-18 130415" src="https://github.com/user-attachments/assets/78506419-19a9-41a6-87e9-89ef2f7db4e0" />
+
 - Khai thác bằng payload `USER="-f root" telnet -a 127.0.0.1`. `USER="-f root"`: Tạo ra một biến môi trường tạm thời trên máy mình với giá trị là `-f root`. `telnet -a 127.0.0.1`: Tham số -a (**Autologin**) ra lệnh cho chương trình Telnet tự động bốc biến môi trường USER vừa tạo để gửi sang bên Server trong quá trình thiết lập kết nối (**handshake**).
 - Kết quả ta gửi đi `-f root` lên server. Bản chất của `telnetd` là sẽ gọi một chương trình có sẵn của OS Linux là `/usr/bin/login` để xử lý kiểm tra tài khoản/mật khẩu. Khi kết hợp lại thì attacker sẽ đăng nhập với quyền root mà không cần mật khẩu. Từ đó ta đọc root.txt bình thường là lấy được flag.
+ <img width="410" height="248" alt="Screenshot 2026-09-18 130618" src="https://github.com/user-attachments/assets/61e12e08-3763-4001-a88c-46419aad0695" />
+
 - **Note**:
 > Sử dụng `“shell”` để chuyển từ môi trường Metasploit sang Terminal của victim
 `“$ script /dev/null -c /bin/bash”`: Nâng cấp Terminal để có thể sử dụng Tab để tự động điền nhanh,…
 `“netstat -tulnp”`: Liệt kê tất cả các cổng mạng đang mở và đang Listening, cùng với thông tin tiến trình, bao gồm cả các dịch vụ chạy ngầm.
-
-
-
-
-
 
