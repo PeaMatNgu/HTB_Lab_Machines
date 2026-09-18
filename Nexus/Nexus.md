@@ -52,7 +52,7 @@ title: Nexus
 - Đây là đoạn mã nguồn gây ra lỗi leo thang đặc quyền này, hệ thống không có cơ chế làm sạch mà bê hết tên file rồi clone vào đường dẫn, Nếu người dùng lợi dụng `../` thì có thể khiến file được ghi ra ngoài thư mục `staging`.
 <img width="368" height="43" alt="Screenshot 2026-09-12 161619" src="https://github.com/user-attachments/assets/e77d0ed7-2d19-4cac-990e-ed8ff6be6627" />
 
-- Đăng nhập vào tài khoản người dùng `j.matthew@nexus.htb` và tạo một repo mới tên `rce`, và đánh dấu repo này là 1 template. Tiếp tục trên máy attacker tạo 1 cặp khóa công khai bằng `ssh-keygen -t ed25519 -f /tmp/.k -N ''` trong thư mục `\tmp`.
+- Đăng nhập vào tài khoản người dùng `j.matthew@nexus.htb` và tạo một repo mới tên `rce`, và đánh dấu repo này là 1 template. Tiếp tục trên máy attacker tạo 1 cặp khóa công khai bằng `ssh-keygen -t ed25519 -f /tmp/.k -N ''` trong thư mục `/tmp`.
 <img width="338" height="190" alt="Screenshot 2026-09-18 120336" src="https://github.com/user-attachments/assets/b40946ad-2388-4029-97ec-dc916a5e2469" />
 
 - Trên máy attacker sinh 1 cặp khóa công khai, ghi khóa công khai vào `/root/.ssh/authorized_keys` bằng việc lợi dụng cơ chế clone `template_repo`, nhưng thông thường **git** có hàm verify file path "..", nên cần tạo Git object trong `.git/objects`bằng script python.
