@@ -40,13 +40,19 @@ title: Nexus
 
 **Question9:** `What systemd timer triggers the template synchronization service?`
 - Dùng `systemctl list-timers` để liệt kệ các bộ hẹn giờ và các dịch vụ đi kèm của các tác vụ tự động. Kết quả trả về `gitea-template-sync.timer`.
+<img width="471" height="208" alt="Screenshot 2026-09-18 112536" src="https://github.com/user-attachments/assets/588400ff-0743-40ce-9ebc-55ea28ee698e" />
+
 - `systemctl cat gitea-template-sync.service`, sẽ xem được dịch vụ này chạy file `.py`, nội dung chính của file là clone các template repository 2 phút 1 lần.
+<img width="362" height="134" alt="Screenshot 2026-09-18 112556" src="https://github.com/user-attachments/assets/206a7a00-eeed-4275-8095-e89a4365f864" />
 
 **Question10:** `Submit the flag located in the root user's home directory?`
 - Flow hoạt động là duyệt danh sách file bằng `git ls-tree` rồi sao chép vào `/home/git/template-staging/<owner>/<repo>/`, nhưng vấn đề ở trong cách xử lý đường dẫn, script lấy trực tiếp giá trị truyền vào từ user mà không có cơ chế validate. Nếu người dùng lợi dụng `../` thì có thể khiến file được ghi ra ngoài thư mục `staging`.
+<img width="317" height="140" alt="Screenshot 2026-09-18 112734" src="https://github.com/user-attachments/assets/9346b2d2-33da-4a8b-be32-1e151e01f0d6" />
+
 <img width="368" height="43" alt="Screenshot 2026-09-12 161619" src="https://github.com/user-attachments/assets/e77d0ed7-2d19-4cac-990e-ed8ff6be6627" />
 
-- Tạo 1 repo template mới, trên máy attacker sinh 1 cặp khóa công khai, ghi khóa công khai vào `/root/.ssh/authorized_keys` bằng việc lợi dụng cơ chế clone `template_repo`, nhưng thông thường **git** có hàm verify file path "..", nên cần tạo Git object trong `.git/objects`bằng script python.
+- Đăng nhập vào tài khoản người dùng `j.matthew@nexus.htb` và tạo một repo mới tên `rce`, và đánh dấu repo này là 1 template. Tiếp tục trên máy attacker tạo 1 cặp khóa công khai bằng `ssh-keygen -f ./mykey -N ''` trong thư mục `\tmp`.
+- Trên máy attacker sinh 1 cặp khóa công khai, ghi khóa công khai vào `/root/.ssh/authorized_keys` bằng việc lợi dụng cơ chế clone `template_repo`, nhưng thông thường **git** có hàm verify file path "..", nên cần tạo Git object trong `.git/objects`bằng script python.
 - `git push -u origin main --force`, đợi 2 phút khi systemd chạy, nó sẽ clone `public key` và attacker có thể ssh vào máy server, sau đó lấy được flag.
 
 
